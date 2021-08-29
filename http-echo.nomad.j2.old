@@ -1,4 +1,5 @@
 job "http-echo" {
+
   datacenters = ["dc1"]
 
   # Stellt sicher, dass der Job nicht auf dem Server node landet

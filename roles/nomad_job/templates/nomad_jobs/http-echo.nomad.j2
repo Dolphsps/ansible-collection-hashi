@@ -1,18 +1,30 @@
 job "http-echo" {
   datacenters = ["dc1"]
 
+  constraint {
+    attribute = "${node.class}"
+    value = "clients"
+  }
+
   group "echo" {
     count = 1
 
-    network {
-      port "http" {
-        static = 80
+    task "server" {
+      driver = "docker"
+      config {
+        image = "hashicorp/http-echo:latest"
+        args  = [
+          "-listen", ":${NOMAD_PORT_http}",
+          "-text", "Welcome to the http-echo service. You are on ${NOMAD_IP_http}",
+        ]
       }
 
-      port "api" {
-        static = 8080
+      resources {
+        cpu = 200
+        memory = 128
       }
     }
+
 
     service {
       name = "http-echo"
@@ -32,21 +44,6 @@ job "http-echo" {
 
     }
 
-    task "traefik" {
-      driver = "docker"
-
-      config {
-        image = "hashicorp/http-echo:latest"
-        args  = [
-          "-listen", ":${NOMAD_PORT_http}",
-          "-text", "Welcome to the http-echo service. You are on ${NOMAD_IP_http}",
-        ]
-      }
-
-      resources {
-        cpu = 200
-        memory = 128
-      }
-    }
+    
   }
 }
