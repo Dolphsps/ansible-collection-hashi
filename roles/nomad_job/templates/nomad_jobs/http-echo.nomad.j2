@@ -1,18 +1,40 @@
 job "http-echo" {
-
   datacenters = ["dc1"]
 
-  # Stellt sicher, dass der Job nicht auf dem Server node landet
-  constraint {
-    attribute = "${node.class}"
-    value = "clients"
-  }
-
   group "echo" {
-    count = 4
+    count = 1
 
-    task "server" {
+    network {
+      port "http" {
+        static = 80
+      }
+
+      port "api" {
+        static = 8080
+      }
+    }
+
+    service {
+      name = "http-echo"
+      port = "http"
+
+      check {
+        type = "http"
+        path = "/health"
+        interval = "2s"
+        timeout = "2s"
+      }
+      
+      tags = [
+          "traefik.enable=true",
+		  # "traefik.http.routers.http-echo.rule=Host(`api.example.com`) && Path(`/http-echo`)",
+        ]
+
+    }
+
+    task "traefik" {
       driver = "docker"
+
       config {
         image = "hashicorp/http-echo:latest"
         args  = [
@@ -22,27 +44,8 @@ job "http-echo" {
       }
 
       resources {
-        network {
-          mbits = 10
-          port "http" {}
-        }
-      }
-
-      service {
-        name = "http-echo"
-        port = "http"
-
-		tags = [
-          "traefik.enable=true",
-		  # "traefik.http.routers.http-echo.rule=Host(`api.example.com`) && Path(`/http-echo`)",
-        ]
-
-        check {
-          type = "http"
-          path = "/health"
-          interval = "2s"
-          timeout = "2s"
-        }
+        cpu = 200
+        memory = 128
       }
     }
   }

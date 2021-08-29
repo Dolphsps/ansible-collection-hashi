@@ -1,0 +1,66 @@
+---
+nomad__package: "nomad"
+nomad__node_name: "{{ inventory_hostname_short }}"
+nomad__log_level: INFO
+nomad__data_path: /opt/nomad/data
+nomad__roles:
+  - client
+#  - server
+
+nomad__bind_address: "0.0.0.0"
+nomad__advertise_address: "{{ ansible_default_ipv4.address }}"
+
+nomad__node_class: ""
+
+nomad__datacenter: "{{ hashi_common__datacenter }}"
+nomad__region: "global"
+
+nomad__port_http: 4646
+nomad__port_rpc: 4647
+nomad__port_serf: 4648
+
+nomad__telemetry_collection_interval: 60s
+
+# Ansible Inventory Nomad Group Name of Servers
+nomad__server_group_name: nomad_servers
+
+# See https://www.nomadproject.io/docs/configuration/server#configuring-scheduler-config for limitations
+nomad__server__default_scheduler_config_scheduler_algorithm: "binpack"
+
+nomad__servers: |
+  {% set _nomad_servers = [] %}
+  {% for host in groups[nomad__server_group_name] %}
+  {% if _nomad_servers.append(hostvars[host]['nomad__advertise_address'] | default(hostvars[host]['ansible_default_ipv4']['address'], true)) %}{% endif %}
+  {% endfor %}
+  {{ _nomad_servers }}
+
+nomad__use_consul: false
+
+nomad__client_meta: {}
+nomad__client_network_interface: null
+
+# Reserved resources
+nomad__client_reserved_cpu: 200
+nomad__client_reserved_memory: 256
+nomad__client_reserved_disk: 1024
+nomad__client_reserved_ports:
+  - "22"
+  - "8500-8600"
+
+# Host volumes
+nomad__client_host_volume_basepath: "/mnt"
+nomad__client_host_volumes: []
+#  - name: mysql
+#    path: /mysql
+
+# Host networks
+nomad__client_host_networks: []
+  # - name: public
+  #   cidr: "203.0.113.0/24"
+
+## Plugins configs
+# docker
+nomad__client_plugin_docker_allow_privileged: false
+nomad__client_plugin_docker_volume_enabled: false
+# raw_exec
+nomad__client_plugin_raw_exec_enabled: false

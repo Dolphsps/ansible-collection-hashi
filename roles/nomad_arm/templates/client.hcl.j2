@@ -1,0 +1,66 @@
+# {{ ansible_managed }}
+client {
+  enabled = true
+{% if nomad__client_network_interface is not none %}
+  network_interface = "{{ nomad__client_network_interface }}"
+{% endif %}
+{% if not nomad__use_consul %}
+  servers = {{ nomad__servers | to_json }}
+{% endif %}
+{% if nomad__node_class %}
+  node_class = "{{ nomad__node_class }}"
+{% endif %}
+
+{% if nomad__client_meta %}
+  meta {
+{% for key, value in nomad__client_meta %}
+    {{ key }} = {{ value | to_json }}
+{% endfor %}
+  }
+{% endif %}
+
+  reserved {
+    cpu = {{ nomad__client_reserved_cpu }}
+    memory = {{ nomad__client_reserved_memory }}
+    disk = {{ nomad__client_reserved_disk }}
+    reserved_ports = "{{ nomad__client_reserved_ports | join(',') }}"
+  }
+
+{% for host_network in nomad__client_host_networks %}
+  host_network "{{ host_network.name }}" {
+    cidr = "{{ host_network.cidr }}"
+  }
+{% endfor %}
+
+{% for host_volume in nomad__client_host_volumes %}
+  host_volume "{{ host_volume.name }}" {
+    path = "{{ nomad__client_host_volume_basepath + host_volume.path }}"
+    read_only = {{ (host_volume.read_only | default(false)) | bool | to_json }}
+  }
+{% endfor %}
+}
+
+{% block nomad__client_plugins %}
+
+{% block nomad__client_plugin_docker %}
+plugin "docker" {
+  config {
+    allow_privileged = {{ nomad__client_plugin_docker_allow_privileged | bool | to_json }}
+    auth {
+      config = "/root/.docker/config.json"
+    }
+    volumes {
+      enabled = {{ nomad__client_plugin_docker_volume_enabled | bool | to_json }}
+    }
+  }
+}
+{% endblock %}
+
+{% block nomad__client_plugin_raw_exec %}
+plugin "raw_exec" {
+  config {
+    enabled = {{ nomad__client_plugin_raw_exec_enabled | to_json }}
+  }
+}
+{% endblock %}
+{% endblock %}
