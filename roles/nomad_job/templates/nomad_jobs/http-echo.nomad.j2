@@ -1,11 +1,6 @@
 job "http-echo" {
   datacenters = ["dc1"]
 
-  constraint {
-    attribute = "${node.class}"
-    value = "clients"
-  }
-
   group "echo" {
     count = 1
 

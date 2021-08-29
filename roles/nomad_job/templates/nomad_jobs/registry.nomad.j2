@@ -1,0 +1,41 @@
+job "registry" {
+  datacenters = ["dc1"]
+  type = "system"
+
+  group "registry" {
+    count = 1
+
+    network {
+      port "api" {
+        static = 5000
+      }
+    }
+
+    service {
+      name = "registry"
+
+      check {
+        name = "alive"
+        type = "tcp"
+        port = "api"
+        interval = "10s"
+        timeout = "2s"
+      }
+    }
+
+    task "registry" {
+      driver = "docker"
+
+      config {
+        image = "registry:latest"
+        network_mode = "host"
+      }
+
+
+      resources {
+        cpu = 200
+        memory = 128
+      }
+    }
+  }
+}
