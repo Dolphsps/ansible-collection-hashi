@@ -13,7 +13,7 @@ tags:
   - nomad
   - consul
 dependencies: {}
-repository: https://github.com/ngine-io/ansible-collection-hashi
+repository: https://github.com/Dolphsps/ansible-collection-hashi.git
 documentation: https://ngine-io.github.io/ansible-collection-hashi/
 homepage: https://ngine-io.github.io/ansible-collection-hashi/
 issues: https://github.com/ngine-io/ansible-collection-hashi/issues
