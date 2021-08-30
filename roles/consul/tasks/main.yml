@@ -15,6 +15,15 @@
   command: consul validate "{{ consul__config_path }}/"
   changed_when: false
 
+- name: Configure unit file for systemd
+  template:
+    src: consul_systemd.service.hcl.j2
+    dest: /usr/lib/systemd/system/consul.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart consul
+
 - name: Ensure service is running
   systemd:
     name: consul

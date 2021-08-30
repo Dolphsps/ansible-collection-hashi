@@ -1,13 +1,13 @@
 job "registry" {
   datacenters = ["dc1"]
-  type = "system"
+  type = "service"
 
   group "registry" {
     count = 1
 
     network {
       port "api" {
-        static = 5000
+        to = 5000
       }
     }
 
@@ -16,7 +16,7 @@ job "registry" {
 
       check {
         name = "alive"
-        type = "tcp"
+        type = "http"
         port = "api"
         interval = "10s"
         timeout = "2s"
