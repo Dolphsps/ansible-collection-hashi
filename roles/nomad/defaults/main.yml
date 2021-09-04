@@ -50,8 +50,10 @@ nomad__client_reserved_ports:
 # Host volumes
 nomad__client_host_volume_basepath: "/mnt"
 nomad__client_host_volumes: []
-#  - name: mysql
-#    path: /mysql
+  - name: nfs_config
+    path: /nfs/McLonbergUSB/McLonberg.net/containers
+  - name: nfs_data
+    path: /nfs/McLonbergUSB/McLonberg.net/data
 
 # Host networks
 nomad__client_host_networks: []
@@ -60,7 +62,7 @@ nomad__client_host_networks: []
 
 ## Plugins configs
 # docker
-nomad__client_plugin_docker_allow_privileged: false
-nomad__client_plugin_docker_volume_enabled: false
+nomad__client_plugin_docker_allow_privileged: true
+nomad__client_plugin_docker_volume_enabled: true
 # raw_exec
 nomad__client_plugin_raw_exec_enabled: false

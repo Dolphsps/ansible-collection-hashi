@@ -1,0 +1,28 @@
+# {{ ansible_managed }}
+name = "{{ vault__node_name }}"
+region = "{{ vault__region }}"
+datacenter = "{{ vault__datacenter }}"
+
+bind_addr = "{{ vault__bind_address }}"
+data_dir = "{{ vault__data_path }}"
+log_level = "{{ vault__log_level }}"
+
+ports {
+  http = {{ vault__port_http }}
+  rpc = {{ vault__port_rpc }}
+  serf = {{ vault__port_serf }}
+}
+
+advertise {
+  http = "{{ vault__advertise_address }}"
+  rpc  = "{{ vault__advertise_address }}"
+  serf = "{{ vault__advertise_address }}"
+}
+
+telemetry {
+  collection_interval = "{{ vault__telemetry_collection_interval }}"
+  disable_hostname = true
+  prometheus_metrics = true
+  publish_allocation_metrics = true
+  publish_node_metrics = true
+}

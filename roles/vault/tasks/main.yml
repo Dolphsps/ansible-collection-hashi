@@ -1,0 +1,90 @@
+---
+- name: Install
+  package:
+    name:
+      - "{{ vault__package }}"
+      - git
+  notify:
+    - restart vault
+
+- name: Configure unit file for systemd
+  template:
+    src: vault_systemd.service.j2
+    dest: /etc/systemd/system/vault.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart vault
+
+- name: Configure sysctl for bridge networking
+  sysctl:
+    name: "{{ item }}"
+    value: '1'
+  with_items:
+    - net.bridge.bridge-nf-call-arptables
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.bridge.bridge-nf-call-iptables
+  when: "'client' in vault__roles"
+  # TODO: Improve check
+  ignore_errors: true
+
+- name: Configure base config
+  template:
+    src: vault.hcl.j2
+    dest: "{{ vault__config_path }}/vault.hcl"
+  notify:
+    - restart vault
+
+- name: Configure server
+  template:
+    src: server.hcl.j2
+    dest: "{{ vault__config_path }}/server.hcl"
+  when: "'server' in vault__roles"
+  notify:
+    - restart vault
+
+- name: Remove server config
+  file:
+    path: "{{ vault__config_path }}/server.hcl"
+    state: absent
+  when: "'server' not in vault__roles"
+  notify:
+    - restart vault
+
+- name: Create host volumes
+  file:
+    path: "{{ vault__client_host_volume_basepath + item.path }}"
+    state: directory
+  with_items: "{{ vault__client_host_volumes }}"
+
+- name: Configure client
+  template:
+    src: client.hcl.j2
+    dest: "{{ vault__config_path }}/client.hcl"
+  when: "'client' in vault__roles"
+  notify:
+    - restart vault
+
+- name: Remove client config
+  file:
+    path: "{{ vault__config_path }}/client.hcl"
+    state: absent
+  when: "'client' not in vault__roles"
+  notify:
+    - restart vault
+
+- name: Ensure service is running
+  systemd:
+    name: vault
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Run handlers
+  meta: flush_handlers
+
+- name: Wait for http port
+  wait_for:
+    port: "{{ vault__port_http }}"
+  when: not ansible_check_mode

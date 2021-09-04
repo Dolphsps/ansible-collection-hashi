@@ -1,6 +1,6 @@
 job "traefik" {
   datacenters = ["dc1"]
-  type = "service"
+  type        = "service"
 
   group "traefik" {
     count = 1
@@ -10,55 +10,35 @@ job "traefik" {
         to = 80
       }
 
+      port "https" {
+        to = 443
+      }
+
       port "api" {
         to = 8080
       }
+
+      mode = "bridge"
     }
 
-    service {
-      name = "traefik"
-
-    }
 
     task "traefik" {
       driver = "docker"
 
       config {
-        image = "traefik:latest"
+        image        = "traefik:2.5.1"
         network_mode = "host"
-
+        ports        = ["http", "https", "api"]
         volumes = [
-          "local/traefik.toml:/etc/traefik/traefik.toml",
+          "/nfs/McLonbergUSB/McLonberg.net/containers/traefik/config/conf.d:/etc/traefik/conf.d",
+          "/nfs/McLonbergUSB/McLonberg.net/containers/traefik/config/traefik.yml:/etc/traefik/traefik.yml"
         ]
       }
 
-      template {
-        data = <<EOF
-[entryPoints]
-    [entryPoints.http]
-    address = ":80"
-    [entryPoints.traefik]
-    address = ":8080"
 
-[api]
-    dashboard = true
-    insecure = true
-
-# Enable Consul Catalog configuration backend.
-[providers.consulCatalog]
-    prefix = "traefik"
-    exposedByDefault = false
-
-    [providers.consulCatalog.endpoint]
-      address = "127.0.0.1:8500"
-      scheme = "http"
-EOF
-
-        destination = "local/traefik.toml"
-      }
 
       resources {
-        cpu = 200
+        cpu    = 200
         memory = 128
       }
     }

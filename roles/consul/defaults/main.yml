@@ -30,7 +30,7 @@ consul__recursors: []
 # - "1.0.0.1"
 
 consul__ui: true
-consul__connect_enabled: false
+consul__connect_enabled: true
 consul__group_name: consul
 consul__data_dir: /opt/consul
 consul__encrypt: ""

@@ -1,44 +1,44 @@
 job "http-echo" {
   datacenters = ["dc1"]
-  type = "system"
+  type        = "system"
 
   group "echo" {
-    
 
     task "echo" {
       driver = "docker"
       config {
         image = "hashicorp/http-echo:latest"
-        args  = [
+        args = [
           "-listen", ":${NOMAD_PORT_http}",
           "-text", "Welcome to the http-echo service. You are on ${NOMAD_IP_http}",
         ]
       }
 
       resources {
-        cpu = 200
+        cpu    = 200
         memory = 128
       }
     }
 
     network {
       port "http" {
-        to = 80
+        to = 5678
       }
-    }  
+
+    }
 
 
     service {
       name = "http-echo"
       port = "http"
-      
+
       tags = [
-          "traefik.enable=true",
-		  # "traefik.http.routers.http-echo.rule=Host(`api.example.com`) && Path(`/http-echo`)",
-        ]
+        "traefik.enable=true",
+        # "traefik.http.routers.http-echo.rule=Host(`api.example.com`) && Path(`/http-echo`)",
+      ]
 
     }
 
-    
+
   }
 }
