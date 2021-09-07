@@ -4,6 +4,32 @@
     name: "{{ consul__package }}"
   notify:
     - restart consul
+  when: ansible_architecture == "x86_64"
+
+- name: Download and Extract 
+  ansible.builtin.unarchive:
+    ##    https://releases.hashicorp.com/consul/1.10.2/consul_1.10.2_linux_armhfv6.zip
+    src: "https://releases.hashicorp.com/consul/{{ consul__version }}/consul_{{ consul__version }}_linux_armhfv6.zip"
+    dest: /usr/bin
+    remote_src: yes
+  notify:
+    - restart consul
+  when: ansible_architecture == "armv7l"
+
+- name: Ensure /etc/consul.d file system exists
+  file: 
+    path: "{{ consul__config_path }}"
+    group: root
+    owner: root
+    state: directory
+  when: ansible_architecture == "armv7l"
+
+- name: Ensure /opt/consul file system exists
+  file: 
+    path: /opt/consul
+    group: consul
+    owner: consul
+    state: directory
 
 - name: Configure
   template:

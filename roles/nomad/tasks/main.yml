@@ -6,6 +6,24 @@
       - git
   notify:
     - restart nomad
+  when: ansible_architecture == "x86_64"
+
+- name: Download and Extract 
+  ansible.builtin.unarchive:
+    src: "https://releases.hashicorp.com/nomad/{{ nomad__version }}/nomad_{{ nomad__version }}_linux_arm.zip"
+    dest: /usr/bin
+    remote_src: yes
+  notify:
+    - restart nomad
+  when: ansible_architecture == "armv7l"
+
+- name: Ensure /etc/nomad.d file system exists
+  file: 
+    path: "{{ nomad__config_path }}"
+    group: root
+    owner: root
+    state: directory
+  when: ansible_architecture == "armv7l"
 
 - name: Configure unit file for systemd
   template:

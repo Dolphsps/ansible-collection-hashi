@@ -1,13 +1,21 @@
 job "traefik" {
+  region      = "global"
   datacenters = ["dc1"]
   type        = "service"
+
+  affinity {
+    attribute = "${attr.unique.hostname}"
+    value     = "ubuntu-mon"
+    weight    = 100
+  }
+
 
   group "traefik" {
     count = 1
 
     network {
       port "http" {
-        to = 80
+        to = 8080
       }
 
       port "https" {
@@ -15,32 +23,50 @@ job "traefik" {
       }
 
       port "api" {
-        to = 8080
+        to = 8081
       }
 
-      mode = "bridge"
     }
-
 
     task "traefik" {
       driver = "docker"
 
       config {
         image        = "traefik:2.5.1"
-        network_mode = "host"
+        network_mode = "cni/mynet"
         ports        = ["http", "https", "api"]
         volumes = [
           "/nfs/McLonbergUSB/McLonberg.net/containers/traefik/config/conf.d:/etc/traefik/conf.d",
-          "/nfs/McLonbergUSB/McLonberg.net/containers/traefik/config/traefik.yml:/etc/traefik/traefik.yml"
+          "/nfs/McLonbergUSB/McLonberg.net/containers/traefik/config:/etc/traefik",
+          "/letsencrypt:/letsencrypt"
         ]
       }
 
 
 
       resources {
-        cpu    = 200
+        cpu    = 100
         memory = 128
       }
+
+
+    }
+
+    service {
+      name = "traefik"
+
+      tags = [
+        "traefik.enable=true",
+        "traefik.http.routers.traefik.rule=Host(`echo.mclonberg.net`)",
+        "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https",
+        "traefik.http.routers.traefik.rule=Host(`echo.mclonberg.net`)",
+        "traefik.http.routers.traefik.entrypoints=web",
+        "traefik.http.routers.traefik.middlewares=https-redirect",
+        "traefik.http.routers.traefiks.rule=Host(`echo.mclonberg.net`)",
+        "traefik.http.routers.traefiks.entrypoints=web",
+        "traefik.http.routers.traefiks.tls=true",
+        "traefik.http.routers.traefiks.tls.certresolver=mclonberg-net"
+      ]
     }
   }
 }

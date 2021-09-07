@@ -38,6 +38,17 @@ client {
     read_only = {{ (host_volume.read_only | default(false)) | bool | to_json }}
   }
 {% endfor %}
+
+
+{% block nomad__client_plugin_cni %}
+{% if nomad__client_plugin_cni_enabled %}
+
+  cni_path        = "/opt/cni/bin"             
+  cni_config_dir  = "/opt/cni/config" 
+
+{% endif %}
+{% endblock %}
+
 }
 
 {% block nomad__client_plugins %}
@@ -63,4 +74,7 @@ plugin "raw_exec" {
   }
 }
 {% endblock %}
+
+
+
 {% endblock %}
